@@ -1,0 +1,16 @@
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
+
+# Love2D build and temp files
+*.love
+*.exe
+*.log
+*.tmp
+
+# Backup files
+*~
