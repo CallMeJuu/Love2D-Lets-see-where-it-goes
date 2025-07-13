@@ -9,6 +9,9 @@ function player:init(x , y)
     self.x = x or 0
     self.y = y or 0
     self.speed = 150
+    self.dir = 'Down'
+    self.state = 'Idle'
+    self.move = Vector()
     self.spriteSheet = nil --love.graphics.newImage('graphics/Player/Player.png')
 
     self.grid = nil
@@ -37,15 +40,68 @@ function player:load()
     self.animation.Walk_Left = anim8.newAnimation(self.grid('1-6', 7), 0.1)
     self.animation.Walk_Up = anim8.newAnimation(self.grid('1-6', 8), 0.1)
 
-    self.anim = self.animation.Idle_Down
+    self.anim = self.animation[self.state..'_'..self.dir]
 end
 
 function player:update(dt)
+    player:movement(dt)
+    player:updateAnimation()
     self.anim:update(dt)
 end
 
 function player:draw()
     self.anim:draw(self.spriteSheet, self.x, self.y)
+end
+
+function player:movement(dt)
+    -- Reset movement vector each frame
+    self.move = Vector()
+    
+    -- Check input and set movement direction
+    if love.keyboard.isDown('w') or love.keyboard.isDown('up') then
+        self.move.y = self.move.y - 1
+        self.dir = 'Up'
+    end
+
+    if love.keyboard.isDown('s') or love.keyboard.isDown('down') then
+        self.move.y = self.move.y + 1
+        self.dir = 'Down'
+    end
+
+    if love.keyboard.isDown('a') or love.keyboard.isDown('left') then
+        self.move.x = self.move.x - 1
+        self.dir = 'Left'
+    end
+
+    if love.keyboard.isDown('d') or love.keyboard.isDown('right') then
+        self.move.x = self.move.x + 1
+        self.dir = 'Right'
+    end
+    
+    -- Normalize the movement vector to ensure consistent speed in all directions
+    if self.move:len() > 0 then
+        self.move = self.move:normalized()
+        -- Apply speed and delta time
+        self.move = self.move * self.speed * dt
+        -- Update player position
+        self.x = self.x + self.move.x
+        self.y = self.y + self.move.y
+    end
+end
+
+function player:updateAnimation()
+    -- Determine if player is moving
+    local isMoving = self.move:len() > 0
+    
+    -- Update state
+    if isMoving then
+        self.state = 'Walk'
+    else
+        self.state = 'Idle'
+    end
+    
+    -- Update animation
+    self.anim = self.animation[self.state..'_'..self.dir]
 end
 
 return player
